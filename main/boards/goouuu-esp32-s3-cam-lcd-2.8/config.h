@@ -1,11 +1,11 @@
-/* 
-    board pin configuration for Goouuu ESP32-S3-CAM-LCD-2.8 
+/*
+    board pin configuration for Goouuu ESP32-S3-CAM-LCD-2.8-v1.2
 
     Esp32-S3-CAM        Camera          LCDili9341          AUDIO               Other
-    GPIO_0              X               PIN_BACKLIGHT       X                   X
+    GPIO_0              X               PIN_BACKLIGHT/LED   X                   X
     GPIO_1              X               X                   I2S_MIC_WS          X
     GPIO_2              X               X                   I2S_MIC_SCK         X
-    GPIO_3              X               PIN_CLK             X                   X
+    GPIO_3              X               PIN_CLK/SCK         X                   X
     GPIO_4              PIN_SIOD        X                   X                   X
     GPIO_5              PIN_SIOC        X                   X                   X
     GPIO_6              PIN_VSYNC       X                   X                   X
@@ -30,11 +30,11 @@
     GPIO_39             X               X                   I2S_SPK_DOUT        X
     GPIO_40             X               X                   I2S_SPK_BCLK        X
     GPIO_41             X               X                   I2S_SPK_LRCK        X
-    GPIO_42             X               X                   I2S_MIC_DIN         X    
+    GPIO_42             X               X                   I2S_MIC_DIN         X
     GPIO_43             X               X                   X                   X
     GPIO_44             X               X                   X                   X
-    GPIO_45             X               PIN_MOSI            X                   X   
-    GPIO_46             X               X                   X                   X
+    GPIO_45             X               PIN_MOSI/SDI        X                   X
+    GPIO_46             X               PIN_MISO/SDO        X                   X
     GPIO_47             X               PIN_DC              X                   X
     GPIO_48             X               X                   X                   BUILTIN_LED
     GPIO_NC             PIN_PWDN        X                   X                   X
@@ -48,7 +48,7 @@
 
 #include <driver/gpio.h>
 
-#define AUDIO_INPUT_SAMPLE_RATE  16000
+#define AUDIO_INPUT_SAMPLE_RATE 16000
 #define AUDIO_OUTPUT_SAMPLE_RATE 24000
 
 // 如果使用 Duplex I2S 模式，请注释下面一行
@@ -56,9 +56,9 @@
 
 #ifdef AUDIO_I2S_METHOD_SIMPLEX
 
-#define AUDIO_I2S_MIC_GPIO_WS   GPIO_NUM_1
-#define AUDIO_I2S_MIC_GPIO_SCK  GPIO_NUM_2
-#define AUDIO_I2S_MIC_GPIO_DIN  GPIO_NUM_42
+#define AUDIO_I2S_MIC_GPIO_WS GPIO_NUM_1
+#define AUDIO_I2S_MIC_GPIO_SCK GPIO_NUM_2
+#define AUDIO_I2S_MIC_GPIO_DIN GPIO_NUM_42
 #define AUDIO_I2S_SPK_GPIO_DOUT GPIO_NUM_39
 #define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_40
 #define AUDIO_I2S_SPK_GPIO_LRCK GPIO_NUM_41
@@ -67,23 +67,21 @@
 
 #define AUDIO_I2S_GPIO_WS GPIO_NUM_4
 #define AUDIO_I2S_GPIO_BCLK GPIO_NUM_5
-#define AUDIO_I2S_GPIO_DIN  GPIO_NUM_6
+#define AUDIO_I2S_GPIO_DIN GPIO_NUM_6
 #define AUDIO_I2S_GPIO_DOUT GPIO_NUM_7
 
 #endif
 
-
 // A MCP Test: Control a lamp
 // #define LAMP_GPIO GPIO_NUM_14
 
-
-#define BUILTIN_LED_GPIO        GPIO_NUM_48 // 内置LED
-#define BOOT_BUTTON_GPIO        GPIO_NUM_19 // boot、唤醒、打断
-#define TOUCH_BUTTON_GPIO       GPIO_NUM_NC //
-#define VOLUME_UP_BUTTON_GPIO   GPIO_NUM_35 // 音量赠
+#define BUILTIN_LED_GPIO GPIO_NUM_48        // 内置LED
+#define BOOT_BUTTON_GPIO GPIO_NUM_19        // boot、唤醒、打断
+#define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
+#define VOLUME_UP_BUTTON_GPIO GPIO_NUM_35   // 音量赠
 #define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_36 // 音量减
 
-//Camera Config
+// Camera Config
 #define CAMERA_PIN_D0 GPIO_NUM_11
 #define CAMERA_PIN_D1 GPIO_NUM_9
 #define CAMERA_PIN_D2 GPIO_NUM_8
@@ -103,24 +101,41 @@
 #define XCLK_FREQ_HZ 20000000
 
 // ILI9341 PIN Config
-#define DISPLAY_BACKLIGHT_PIN GPIO_NUM_0    //
-#define DISPLAY_MOSI_PIN      GPIO_NUM_45   //
-#define DISPLAY_CLK_PIN       GPIO_NUM_3    //
-#define DISPLAY_RST_PIN       GPIO_NUM_21
-#define DISPLAY_DC_PIN        GPIO_NUM_47
-#define DISPLAY_CS_PIN        GPIO_NUM_14   //
+#define DISPLAY_CS_PIN3 GPIO_NUM_14 //
+#define DISPLAY_RST_PIN4 GPIO_NUM_21
+#define DISPLAY_DC_PIN5 GPIO_NUM_47
+#define DISPLAY_MOSI_PIN6 GPIO_NUM_45     //
+#define DISPLAY_CLK_PIN7 GPIO_NUM_3       //
+#define DISPLAY_BACKLIGHT_PIN8 GPIO_NUM_0 //
+#define DISPLAY_MISO_PIN9 GPIO_NUM_46
+#ifdef LCD_TYPE_ILI9341_TOUCH_PIN
+#define DISPLAY_TCLK_PIN10 GPIO_NUM_42 //
+#define DISPLAY_TCS_PIN11 GPIO_NUM_1   //
+#define DISPLAY_TDIN_PIN12 GPIO_NUM_2  //
+#define DISPLAY_TDO_PIN13 GPIO_NUM_41  //
+#define DISPLAY_TIRQ_PIN14 GPIO_NUM_NC //
+#endif
+
+// OLED 0.96inch I2C PIN Config
+#ifdef CONFIG_GOOUUU_ESP32_S3_CAM_V1_2_LCD_OLED_0_96_I2C
+#define DISPLAY_SCL_PIN3 GPIO_NUM_41
+#define DISPLAY_SDA_PIN4 GPIO_NUM_42
+#endif
+
+// #define DISPLAY_SDA_PIN GPIO_NUM_45
+#define DISPLAY_SCL_PIN GPIO_NUM_46
 
 #ifdef CONFIG_GOOUUU_ESP32_S3_CAM_V1_2_LCD_ILI9341_NO_IPS
 #define LCD_TYPE_ILI9341_SERIAL
-#define DISPLAY_WIDTH   240
-#define DISPLAY_HEIGHT  320
+#define DISPLAY_WIDTH 240
+#define DISPLAY_HEIGHT 320
 #define DISPLAY_MIRROR_X true
 #define DISPLAY_MIRROR_Y false
 #define DISPLAY_SWAP_XY false
-#define DISPLAY_INVERT_COLOR    false
-#define DISPLAY_RGB_ORDER  LCD_RGB_ELEMENT_ORDER_BGR
-#define DISPLAY_OFFSET_X  0
-#define DISPLAY_OFFSET_Y  0
+#define DISPLAY_INVERT_COLOR false
+#define DISPLAY_RGB_ORDER LCD_RGB_ELEMENT_ORDER_BGR
+#define DISPLAY_OFFSET_X 0
+#define DISPLAY_OFFSET_Y 0
 #define DISPLAY_BACKLIGHT_OUTPUT_INVERT false
 #define DISPLAY_SPI_MODE 0
 #endif

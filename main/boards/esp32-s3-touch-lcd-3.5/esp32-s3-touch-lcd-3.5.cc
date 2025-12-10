@@ -165,9 +165,9 @@ private:
     void InitializeSpi() {
         ESP_LOGI(TAG, "Initialize QSPI bus");
         spi_bus_config_t buscfg = {};
-        buscfg.mosi_io_num = DISPLAY_MOSI_PIN;
-        buscfg.miso_io_num = DISPLAY_MISO_PIN;
-        buscfg.sclk_io_num = DISPLAY_CLK_PIN;
+        buscfg.mosi_io_num = DISPLAY_MOSI_PIN6;
+        buscfg.miso_io_num = DISPLAY_MISO_PIN9;
+        buscfg.sclk_io_num = DISPLAY_CLK_PIN7;
         buscfg.quadwp_io_num = GPIO_NUM_NC;
         buscfg.quadhd_io_num = GPIO_NUM_NC;
         buscfg.max_transfer_sz = DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(uint16_t);
