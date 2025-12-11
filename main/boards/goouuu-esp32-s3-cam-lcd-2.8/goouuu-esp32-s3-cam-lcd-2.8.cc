@@ -47,28 +47,31 @@ static const gc9a01_lcd_init_cmd_t gc9107_lcd_init_cmds[] = {
     {0xc6, (uint8_t[]){0x21}, 1, 0},
     {0xc7, (uint8_t[]){0x15}, 1, 0},
     {0xf0,
-    (uint8_t[]){0x1D, 0x38, 0x09, 0x4D, 0x92, 0x2F, 0x35, 0x52, 0x1E, 0x0C,
-                0x04, 0x12, 0x14, 0x1f},
-    14, 0},
+     (uint8_t[]){0x1D, 0x38, 0x09, 0x4D, 0x92, 0x2F, 0x35, 0x52, 0x1E, 0x0C,
+                 0x04, 0x12, 0x14, 0x1f},
+     14, 0},
     {0xf1,
-    (uint8_t[]){0x16, 0x40, 0x1C, 0x54, 0xA9, 0x2D, 0x2E, 0x56, 0x10, 0x0D,
-                0x0C, 0x1A, 0x14, 0x1E},
-    14, 0},
+     (uint8_t[]){0x16, 0x40, 0x1C, 0x54, 0xA9, 0x2D, 0x2E, 0x56, 0x10, 0x0D,
+                 0x0C, 0x1A, 0x14, 0x1E},
+     14, 0},
     {0xf4, (uint8_t[]){0x00, 0x00, 0xFF}, 3, 0},
     {0xba, (uint8_t[]){0xFF, 0xFF}, 2, 0},
 };
 #endif
- 
-#define TAG "CompactWifiBoardS3Cam"
 
-class CompactWifiBoardS3Cam : public WifiBoard {
+#define TAG "GoouuuEsp32S3CamLcd28Board"
+
+class GoouuuEsp32S3CamLcd28Board : public WifiBoard
+{
 private:
- 
     Button boot_button_;
-    LcdDisplay* display_;
-     Esp32Camera* camera_;
-
-    void InitializeSpi() {
+    Button volume_up_;
+    Button volume_down_;
+    LcdDisplay *display_;
+    Esp32Camera *camera_;
+    // 初始化SPI总线
+    void InitializeSpi()
+    {
         spi_bus_config_t buscfg = {};
         buscfg.mosi_io_num = DISPLAY_MOSI_PIN6;
         buscfg.miso_io_num = DISPLAY_MISO_PIN9;
@@ -79,16 +82,17 @@ private:
         ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST, &buscfg, SPI_DMA_CH_AUTO));
     }
 
-    void InitializeLcdDisplay() {
+    void InitializeLcdDisplay()
+    {
         esp_lcd_panel_io_handle_t panel_io = nullptr;
         esp_lcd_panel_handle_t panel = nullptr;
-        
+
         // 液晶屏控制IO初始化
         ESP_LOGD(TAG, "Install panel IO");
         esp_lcd_panel_io_spi_config_t io_config = {};
         io_config.cs_gpio_num = DISPLAY_CS_PIN3;
         io_config.dc_gpio_num = DISPLAY_DC_PIN5;
-        io_config.pclk_hz = 20 * 1000 * 1000;   //40 * 1000 * 1000;
+        io_config.pclk_hz = 20 * 1000 * 1000; // 40 * 1000 * 1000;
         io_config.spi_mode = DISPLAY_SPI_MODE;
         io_config.trans_queue_depth = 10;
         io_config.lcd_cmd_bits = 8;
@@ -108,25 +112,26 @@ private:
         gc9a01_vendor_config_t gc9107_vendor_config = {
             .init_cmds = gc9107_lcd_init_cmds,
             .init_cmds_size = sizeof(gc9107_lcd_init_cmds) / sizeof(gc9a01_lcd_init_cmd_t),
-        };        
+        };
 #else
         ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(panel_io, &panel_config, &panel));
 #endif
-        
+
         esp_lcd_panel_reset(panel);
 
         esp_lcd_panel_init(panel);
         esp_lcd_panel_invert_color(panel, DISPLAY_INVERT_COLOR);
         esp_lcd_panel_swap_xy(panel, DISPLAY_SWAP_XY);
         esp_lcd_panel_mirror(panel, DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y);
-#ifdef  LCD_TYPE_GC9A01_SERIAL
+#ifdef LCD_TYPE_GC9A01_SERIAL
         panel_config.vendor_config = &gc9107_vendor_config;
 #endif
         display_ = new SpiLcdDisplay(panel_io, panel,
-                                    DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_OFFSET_X, DISPLAY_OFFSET_Y, DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y, DISPLAY_SWAP_XY);
+                                     DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_OFFSET_X, DISPLAY_OFFSET_Y, DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y, DISPLAY_SWAP_XY);
     }
 
-    void InitializeCamera() {
+    void InitializeCamera()
+    {
         static esp_cam_ctlr_dvp_pin_config_t dvp_pin_config = {
             .data_width = CAM_CTLR_DATA_WIDTH_8,
             .data_io = {
@@ -171,62 +176,81 @@ private:
         camera_->SetHMirror(false);
     }
 
-    void InitializeButtons() {
-        boot_button_.OnClick([this]() {
+    void InitializeButtons()
+    {
+        boot_button_.OnClick([this]()
+                             {
             auto& app = Application::GetInstance();
             // 如果设备正在启动且WiFi未连接，则重置WiFi配置
             if (app.GetDeviceState() == kDeviceStateStarting && !WifiStation::GetInstance().IsConnected()) {
                 ResetWifiConfiguration();
             }
             // 切换聊天状态（唤醒设备）
-            app.ToggleChatState();
-        });
+            app.ToggleChatState(); });
+            
+        volume_up_.OnClick([this]()
+                             {
+            auto& app = Application::GetInstance();
+            app.VolumeUp(); });
+
+        volume_down_.OnClick([this]()
+                             {
+            auto& app = Application::GetInstance();
+            app.VolumeDown(); });
     }
 
 public:
-    CompactWifiBoardS3Cam() :
-        boot_button_(BOOT_BUTTON_GPIO) {
+    GoouuuEsp32S3CamLcd28Board() : volume_up_(VOLUME_UP_BUTTON_GPIO),
+                                   volume_down_(VOLUME_DOWN_BUTTON_GPIO),
+                                   boot_button_(BOOT_BUTTON_GPIO)
+    {
         InitializeSpi();
         InitializeLcdDisplay();
         InitializeButtons();
         InitializeCamera();
-        if (DISPLAY_BACKLIGHT_PIN8 != GPIO_NUM_NC) {
+        if (DISPLAY_BACKLIGHT_PIN8 != GPIO_NUM_NC)
+        {
             GetBacklight()->RestoreBrightness();
         }
-        
     }
 
-    virtual Led* GetLed() override {
+    virtual Led *GetLed() override
+    {
         static SingleLed led(BUILTIN_LED_GPIO);
         return &led;
     }
 
-    virtual AudioCodec* GetAudioCodec() override {
+    virtual AudioCodec *GetAudioCodec() override
+    {
 #ifdef AUDIO_I2S_METHOD_SIMPLEX
         static NoAudioCodecSimplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-            AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_SCK, AUDIO_I2S_MIC_GPIO_WS, AUDIO_I2S_MIC_GPIO_DIN);
+                                               AUDIO_I2S_SPK_GPIO_BCLK, AUDIO_I2S_SPK_GPIO_LRCK, AUDIO_I2S_SPK_GPIO_DOUT, AUDIO_I2S_MIC_GPIO_SCK, AUDIO_I2S_MIC_GPIO_WS, AUDIO_I2S_MIC_GPIO_DIN);
 #else
         static NoAudioCodecDuplex audio_codec(AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
-            AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS, AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN);
+                                              AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS, AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN);
 #endif
         return &audio_codec;
     }
 
-    virtual Display* GetDisplay() override {
+    virtual Display *GetDisplay() override
+    {
         return display_;
     }
 
-    virtual Backlight* GetBacklight() override {
-        if (DISPLAY_BACKLIGHT_PIN8 != GPIO_NUM_NC) {
+    virtual Backlight *GetBacklight() override
+    {
+        if (DISPLAY_BACKLIGHT_PIN8 != GPIO_NUM_NC)
+        {
             static PwmBacklight backlight(DISPLAY_BACKLIGHT_PIN8, DISPLAY_BACKLIGHT_OUTPUT_INVERT);
             return &backlight;
         }
         return nullptr;
     }
 
-    virtual Camera* GetCamera() override {
+    virtual Camera *GetCamera() override
+    {
         return camera_;
     }
 };
 
-DECLARE_BOARD(CompactWifiBoardS3Cam);
+DECLARE_BOARD(GoouuuEsp32S3CamLcd28Board);
