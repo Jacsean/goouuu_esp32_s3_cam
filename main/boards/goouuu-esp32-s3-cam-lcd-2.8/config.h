@@ -1,5 +1,5 @@
 /*
-    board pin configuration for Goouuu ESP32-S3-CAM-LCD-2.8-v1.2
+    Board pin configuration for Goouuu ESP32-S3-CAM-LCD-2.8-v1.2
 
     Esp32-S3-CAM        Camera          LCDili9341          AUDIO               Other
     GPIO_0              X               PIN_BACKLIGHT/LED   X                   X
@@ -22,11 +22,12 @@
     GPIO_17             PIN_D6          X                   X                   X
     GPIO_18             PIN_D5          X                   X                   X
     GPIO_19             X               X                   X                   BUTTON_BOOT
+    GPIO_20             X               X                   X                   X
     GPIO_21             X               PIN_RST             X                   X
-    GPIO_35             X               X                   X                   BUTTON_VOLUME_UP
-    GPIO_36             X               X                   X                   BUTTON_VOLUME_DOWN
-    GPIO_37             X               X                   X                   X
-    GPIO_38             X               X                   X                   X
+    GPIO_35             X               X                   X                   X
+    GPIO_36             X               X                   X                   X
+    GPIO_37             X               X                   X                   VOLUME_UP_BUTTON_GPIO
+    GPIO_38             X               X                   X                   VOLUME_DOWN_BUTTON_GPIO
     GPIO_39             X               X                   I2S_SPK_DOUT        X
     GPIO_40             X               X                   I2S_SPK_BCLK        X
     GPIO_41             X               X                   I2S_SPK_LRCK        X
@@ -34,7 +35,7 @@
     GPIO_43             X               X                   X                   X
     GPIO_44             X               X                   X                   X
     GPIO_45             X               PIN_MOSI/SDI        X                   X
-    GPIO_46             X               PIN_MISO/SDO        X                   X
+    GPIO_46             X               X                   X                   X
     GPIO_47             X               PIN_DC              X                   X
     GPIO_48             X               X                   X                   BUILTIN_LED
     GPIO_NC             PIN_PWDN        X                   X                   X
@@ -72,14 +73,15 @@
 
 #endif
 
+/************************ 硬件配置 ************************/
 // A MCP Test: Control a lamp
 // #define LAMP_GPIO GPIO_NUM_14
-
+// 1. 按键引脚：避开相机/屏幕复用引脚，
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // 内置LED
 #define BOOT_BUTTON_GPIO GPIO_NUM_19        // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
-#define VOLUME_UP_BUTTON_GPIO GPIO_NUM_35   // 音量赠
-#define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_36 // 音量减
+#define VOLUME_UP_BUTTON_GPIO  GPIO_NUM_37  // 音量增//GPIO_NUM_NC //
+#define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_38 // 音量减//GPIO_NUM_NC // 
 
 // Camera Config
 #define CAMERA_PIN_D0 GPIO_NUM_11
@@ -107,7 +109,10 @@
 #define DISPLAY_MOSI_PIN6 GPIO_NUM_45     //
 #define DISPLAY_CLK_PIN7 GPIO_NUM_3       //
 #define DISPLAY_BACKLIGHT_PIN8 GPIO_NUM_0 //
-#define DISPLAY_MISO_PIN9 GPIO_NUM_46//GPIO_NUM_NC//
+#define DISPLAY_MISO_PIN9 GPIO_NUM_NC     // GPIO_NUM_46     //
+// #define DISPLAY_SDA_PIN GPIO_NUM_45
+// #define DISPLAY_SCL_PIN GPIO_NUM_46
+
 #ifdef LCD_TYPE_ILI9341_TOUCH_PIN
 #define DISPLAY_TCLK_PIN10 GPIO_NUM_42 //
 #define DISPLAY_TCS_PIN11 GPIO_NUM_1   //
@@ -121,9 +126,6 @@
 #define DISPLAY_SCL_PIN3 GPIO_NUM_41
 #define DISPLAY_SDA_PIN4 GPIO_NUM_42
 #endif
-
-// #define DISPLAY_SDA_PIN GPIO_NUM_45
-#define DISPLAY_SCL_PIN GPIO_NUM_46
 
 #ifdef CONFIG_GOOUUU_ESP32_S3_CAM_V1_2_LCD_ILI9341_NO_IPS
 #define LCD_TYPE_ILI9341_SERIAL

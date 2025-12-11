@@ -67,8 +67,10 @@ private:
     Button boot_button_;
     Button volume_up_;
     Button volume_down_;
+
     LcdDisplay *display_;
     Esp32Camera *camera_;
+
     // 初始化SPI总线
     void InitializeSpi()
     {
@@ -187,22 +189,22 @@ private:
             }
             // 切换聊天状态（唤醒设备）
             app.ToggleChatState(); });
-            
+
         volume_up_.OnClick([this]()
-                             {
-            auto& app = Application::GetInstance();
-            app.VolumeUp(); });
+                           { 
+                            int volume = GetAudioCodec()->output_volume();
+                            GetAudioCodec()->SetOutputVolume(volume+1); });
 
         volume_down_.OnClick([this]()
                              {
-            auto& app = Application::GetInstance();
-            app.VolumeDown(); });
+                                int volume = GetAudioCodec()->output_volume();
+                                GetAudioCodec()->SetOutputVolume(volume-1); });
     }
 
 public:
-    GoouuuEsp32S3CamLcd28Board() : volume_up_(VOLUME_UP_BUTTON_GPIO),
-                                   volume_down_(VOLUME_DOWN_BUTTON_GPIO),
-                                   boot_button_(BOOT_BUTTON_GPIO)
+    GoouuuEsp32S3CamLcd28Board() : boot_button_(BOOT_BUTTON_GPIO),
+                                   volume_up_(VOLUME_UP_BUTTON_GPIO),
+                                   volume_down_(VOLUME_DOWN_BUTTON_GPIO)
     {
         InitializeSpi();
         InitializeLcdDisplay();
