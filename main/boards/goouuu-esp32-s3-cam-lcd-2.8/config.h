@@ -44,32 +44,32 @@
     GPIO_NC             PIN_RESET       X                   X                   X
     GPIO_NC             X               X                   X                   BUTTON_TOUCH
     --------------------------------------------------------------------------------------------------------
-
+  ━ ╋ ┏ ┓   ┃ ━ ╋ ┏ ┓ ┗ ┛ ━ ╋ ┏ ┓ ┓ ┏ ┓ ━ ╋ ┏ ┓ ┓ ┏ ┓ ━ ╋ ┏ ┓ ┓ ┏ ┓ ━ ╋ ┏ ┓ ┓ ┏ ┓ ━
     -2. Pinout diagram
     --------------------------------------------------------------------------------------------------------
                             Goouuu ESP32-S3-CAM Board Pinout Diagram
-                        ----------------------NNNNNMMMMMMM-------------------
-                        ---- 20 -- 3.3V/VCC_OUT   ||           TXD0 -- 1 ----
-                        ---- 19 -- EN             ||           RXD0 -- 2 ---- 
-        CAMERA_PIN_SIOD ---- 18 -- GPIO 4         ||         GPIO 1 -- 3 ---- AUDIO_I2S_MIC_GPIO_WS
-        CAMERA_PIN_SIOC ---- 17 -- GPIO 5         ||         GPIO 2 -- 4 ---- AUDIO_I2S_MIC_GPIO_SCK  
-       CAMERA_PIN_VSYNC ---- 16 -- GPIO 6         ||         GPIO42 -- 5 ---- AUDIO_I2S_MIC_GPIO_DIN
-        CAMERA_PIN_HREF ---- 15 -- GPIO 7         ||         GPIO41 -- 6 ---- AUDIO_I2S_SPK_GPIO_LRCK
-        CAMERA_PIN_XCLK ---- 14 -- GPIO15         ||         GPIO40 -- 7 ---- AUDIO_I2S_SPK_GPIO_BCLK
-          CAMERA_PIN_D7 ---- 13 -- GPIO16         ||         GPIO39 -- 8 ---- AUDIO_I2S_SPK_GPIO_DOUT
-          CAMERA_PIN_D6 ---- 12 -- GPIO17         ||         GPIO38 -- 9 ----   
-          CAMERA_PIN_D5 ---- 11 -- GPIO18         ||         GPIO37 -- 10 ----    
-          CAMERA_PIN_D2 ---- 10 -- GPIO 8         ||         GPIO36 -- 11 ----
-       DISPLAY_CLK_PIN7 ----  9 -- GPIO 3         ||         GPIO35 -- 12 ---- 
-                        ----  8 -- GPIO46         ||         GPIO 0 -- 13 ---- DISPLAY_BACKLIGHT_PIN8
-          CAMERA_PIN_D1 ----  7 -- GPIO 9         ||         GPIO45 -- 14 ---- DISPLAY_MOSI_PIN6
-          CAMERA_PIN_D3 ----  6 -- GPIO10         ||         GPIO48 -- 15 ---- intelligent LED
-          CAMERA_PIN_D0 ----  5 -- GPIO11         ||         GPIO47 -- 16 ---- DISPLAY_DC_PIN5
-          CAMERA_PIN_D4 ----  4 -- GPIO12         ||         GPIO21 -- 17 ---- DISPLAY_RST_PIN4
-        CAMERA_PIN_PCLK ----  3 -- GPIO13         ||         GPIO20 -- 18 ---- DISPLAY_CS_PIN6
-        DISPLAY_CS_PIN3 ----  2 -- GPIO14         ||         GPIO19 -- 19 ---- BOOT_BUTTON
-                        ----  1 -- 5V/VCC_IN      ||            GND -- 20 ---- 
-                        -------------------U---------------U------------------
+                         ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                        ━╋━━ 20 -- 3.3V/VCC_OUT   ||      TXD0 -- 1  ━━╋━
+                        ━╋━━ 19 -- EN             ||      RXD0 -- 2  ━━╋━
+        CAMERA_PIN_SIOD ━╋━━ 18 -- GPIO 4         ||    GPIO 1 -- 3  ━━╋━ AUDIO_I2S_MIC_GPIO_WS
+        CAMERA_PIN_SIOC ━╋━━ 17 -- GPIO 5         ||    GPIO 2 -- 4  ━━╋━ AUDIO_I2S_MIC_GPIO_SCK  
+       CAMERA_PIN_VSYNC ━╋━━ 16 -- GPIO 6         ||    GPIO42 -- 5  ━━╋━ AUDIO_I2S_MIC_GPIO_DIN
+        CAMERA_PIN_HREF ━╋━━ 15 -- GPIO 7         ||    GPIO41 -- 6  ━━╋━ AUDIO_I2S_SPK_GPIO_LRCK
+        CAMERA_PIN_XCLK ━╋━━ 14 -- GPIO15         ||    GPIO40 -- 7  ━━╋━ AUDIO_I2S_SPK_GPIO_BCLK
+          CAMERA_PIN_D7 ━╋━━ 13 -- GPIO16         ||    GPIO39 -- 8  ━━╋━ AUDIO_I2S_SPK_GPIO_DOUT
+          CAMERA_PIN_D6 ━╋━━ 12 -- GPIO17         ||    GPIO38 -- 9  ━━╋━   
+          CAMERA_PIN_D5 ━╋━━ 11 -- GPIO18         ||    GPIO37 -- 10 ━━╋━    
+          CAMERA_PIN_D2 ━╋━━ 10 -- GPIO 8         ||    GPIO36 -- 11 ━━╋━
+       DISPLAY_CLK_PIN7 ━╋━━  9 -- GPIO 3         ||    GPIO35 -- 12 ━━╋━ 
+                        ━╋━━  8 -- GPIO46         ||    GPIO 0 -- 13 ━━╋━ DISPLAY_BACKLIGHT_PIN8
+          CAMERA_PIN_D1 ━╋━━  7 -- GPIO 9         ||    GPIO45 -- 14 ━━╋━ DISPLAY_MOSI_PIN6
+          CAMERA_PIN_D3 ━╋━━  6 -- GPIO10         ||    GPIO48 -- 15 ━━╋━ intelligent LED
+          CAMERA_PIN_D0 ━╋━━  5 -- GPIO11         ||    GPIO47 -- 16 ━━╋━ DISPLAY_DC_PIN5
+          CAMERA_PIN_D4 ━╋━━  4 -- GPIO12         ||    GPIO21 -- 17 ━━╋━ DISPLAY_RST_PIN4
+        CAMERA_PIN_PCLK ━╋━━  3 -- GPIO13         ||    GPIO20 -- 18 ━━╋━ DISPLAY_CS_PIN6
+        DISPLAY_CS_PIN3 ━╋━━  2 -- GPIO14         ||    GPIO19 -- 19 ━━╋━ BOOT_BUTTON
+                        ━╋━━  1 -- 5V/VCC_IN      ||       GND -- 20 ━━╋━
+                         ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
     --------------------------------------------------------------------------------------------------------
 */
