@@ -1,11 +1,13 @@
 /*
     Board pin configuration for Goouuu ESP32-S3-CAM-LCD-2.8-v1.2
-
+    -1. Pin usage summary
+    --------------------------------------------------------------------------------------------------------
     Esp32-S3-CAM        Camera          LCDili9341          AUDIO               Other
-    GPIO_0              X               PIN_BACKLIGHT/LED   X                   X
+    --------------------------------------------------------------------------------------------------------
+    GPIO_0              X               PIN8_BACKLIGHT/LED  X                   X
     GPIO_1              X               X                   I2S_MIC_WS          X
     GPIO_2              X               X                   I2S_MIC_SCK         X
-    GPIO_3              X               PIN_CLK/SCK         X                   X
+    GPIO_3              X               PIN7_CLK/SCK        X                   X
     GPIO_4              PIN_SIOD        X                   X                   X
     GPIO_5              PIN_SIOC        X                   X                   X
     GPIO_6              PIN_VSYNC       X                   X                   X
@@ -16,14 +18,14 @@
     GPIO_11             PIN_D0          X                   X                   X
     GPIO_12             PIN_D4          X                   X                   X
     GPIO_13             PIN_PCLK        X                   X                   X
-    GPIO_14             X               PIN_CS              X                   X
+    GPIO_14             X               PIN3_CS             X                   X
     GPIO_15             PIN_XCLK        X                   X                   X
     GPIO_16             PIN_D7          X                   X                   X
     GPIO_17             PIN_D6          X                   X                   X
     GPIO_18             PIN_D5          X                   X                   X
     GPIO_19             X               X                   X                   BUTTON_BOOT
     GPIO_20             X               X                   X                   X
-    GPIO_21             X               PIN_RST             X                   X
+    GPIO_21             X               PIN4_RST            X                   X
     GPIO_35             X               X                   X                   X
     GPIO_36             X               X                   X                   X
     GPIO_37             X               X                   X                   VOLUME_UP_BUTTON_GPIO
@@ -34,14 +36,42 @@
     GPIO_42             X               X                   I2S_MIC_DIN         X
     GPIO_43             X               X                   X                   X
     GPIO_44             X               X                   X                   X
-    GPIO_45             X               PIN_MOSI/SDI        X                   X
+    GPIO_45             X               PIN6_MOSI/SDI       X                   X
     GPIO_46             X               X                   X                   X
-    GPIO_47             X               PIN_DC              X                   X
+    GPIO_47             X               PIN5_DC             X                   X
     GPIO_48             X               X                   X                   BUILTIN_LED
     GPIO_NC             PIN_PWDN        X                   X                   X
     GPIO_NC             PIN_RESET       X                   X                   X
     GPIO_NC             X               X                   X                   BUTTON_TOUCH
+    --------------------------------------------------------------------------------------------------------
 
+    -2. Pinout diagram
+    --------------------------------------------------------------------------------------------------------
+                            Goouuu ESP32-S3-CAM Board Pinout Diagram
+                        ----------------------NNNNNMMMMMMM-------------------
+                        ---- 20 -- 3.3V/VCC_OUT   ||           TXD0 -- 1 ----
+                        ---- 19 -- EN             ||           RXD0 -- 2 ---- 
+        CAMERA_PIN_SIOD ---- 18 -- GPIO 4         ||         GPIO 1 -- 3 ---- AUDIO_I2S_MIC_GPIO_WS
+        CAMERA_PIN_SIOC ---- 17 -- GPIO 5         ||         GPIO 2 -- 4 ---- AUDIO_I2S_MIC_GPIO_SCK  
+       CAMERA_PIN_VSYNC ---- 16 -- GPIO 6         ||         GPIO42 -- 5 ---- AUDIO_I2S_MIC_GPIO_DIN
+        CAMERA_PIN_HREF ---- 15 -- GPIO 7         ||         GPIO41 -- 6 ---- AUDIO_I2S_SPK_GPIO_LRCK
+        CAMERA_PIN_XCLK ---- 14 -- GPIO15         ||         GPIO40 -- 7 ---- AUDIO_I2S_SPK_GPIO_BCLK
+          CAMERA_PIN_D7 ---- 13 -- GPIO16         ||         GPIO39 -- 8 ---- AUDIO_I2S_SPK_GPIO_DOUT
+          CAMERA_PIN_D6 ---- 12 -- GPIO17         ||         GPIO38 -- 9 ----   
+          CAMERA_PIN_D5 ---- 11 -- GPIO18         ||         GPIO37 -- 10 ----    
+          CAMERA_PIN_D2 ---- 10 -- GPIO 8         ||         GPIO36 -- 11 ----
+       DISPLAY_CLK_PIN7 ----  9 -- GPIO 3         ||         GPIO35 -- 12 ---- 
+                        ----  8 -- GPIO46         ||         GPIO 0 -- 13 ---- DISPLAY_BACKLIGHT_PIN8
+          CAMERA_PIN_D1 ----  7 -- GPIO 9         ||         GPIO45 -- 14 ---- DISPLAY_MOSI_PIN6
+          CAMERA_PIN_D3 ----  6 -- GPIO10         ||         GPIO48 -- 15 ---- intelligent LED
+          CAMERA_PIN_D0 ----  5 -- GPIO11         ||         GPIO47 -- 16 ---- DISPLAY_DC_PIN5
+          CAMERA_PIN_D4 ----  4 -- GPIO12         ||         GPIO21 -- 17 ---- DISPLAY_RST_PIN4
+        CAMERA_PIN_PCLK ----  3 -- GPIO13         ||         GPIO20 -- 18 ---- DISPLAY_CS_PIN6
+        DISPLAY_CS_PIN3 ----  2 -- GPIO14         ||         GPIO19 -- 19 ---- BOOT_BUTTON
+                        ----  1 -- 5V/VCC_IN      ||            GND -- 20 ---- 
+                        -------------------U---------------U------------------
+
+    --------------------------------------------------------------------------------------------------------
 */
 
 #ifndef _BOARD_CONFIG_H_
@@ -49,20 +79,22 @@
 
 #include <driver/gpio.h>
 
+/************************ 硬件配置 ************************/
+// Audio sample rate
 #define AUDIO_INPUT_SAMPLE_RATE 16000
 #define AUDIO_OUTPUT_SAMPLE_RATE 24000
 
+// Audio I2S pin configuration
 // 如果使用 Duplex I2S 模式，请注释下面一行
 #define AUDIO_I2S_METHOD_SIMPLEX
-
 #ifdef AUDIO_I2S_METHOD_SIMPLEX
 
 #define AUDIO_I2S_MIC_GPIO_WS GPIO_NUM_1
 #define AUDIO_I2S_MIC_GPIO_SCK GPIO_NUM_2
 #define AUDIO_I2S_MIC_GPIO_DIN GPIO_NUM_42
-#define AUDIO_I2S_SPK_GPIO_DOUT GPIO_NUM_39
-#define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_40
 #define AUDIO_I2S_SPK_GPIO_LRCK GPIO_NUM_41
+#define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_40
+#define AUDIO_I2S_SPK_GPIO_DOUT GPIO_NUM_39
 
 #else
 
@@ -73,15 +105,15 @@
 
 #endif
 
-/************************ 硬件配置 ************************/
 // A MCP Test: Control a lamp
 // #define LAMP_GPIO GPIO_NUM_14
-// 1. 按键引脚：避开相机/屏幕复用引脚，
+
+// Button Config
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // 内置LED
 #define BOOT_BUTTON_GPIO GPIO_NUM_19        // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
-#define VOLUME_UP_BUTTON_GPIO  GPIO_NUM_37  // 音量增//GPIO_NUM_NC //
-#define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_38 // 音量减//GPIO_NUM_NC // 
+#define VOLUME_UP_BUTTON_GPIO  GPIO_NUM_NC //GPIO_NUM_37  // 音量增//
+#define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_NC // GPIO_NUM_38 // 音量减//
 
 // Camera Config
 #define CAMERA_PIN_D0 GPIO_NUM_11
