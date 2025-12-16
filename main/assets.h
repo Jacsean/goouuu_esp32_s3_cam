@@ -15,6 +15,7 @@ struct Asset {
     size_t offset;
 };
 
+// 4. 资源管理系统 (main/assets.h)：
 class Assets {
 public:
     static Assets& GetInstance() {

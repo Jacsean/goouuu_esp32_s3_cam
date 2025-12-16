@@ -56,6 +56,9 @@ public:
     
     // Set whether to hide chat messages/subtitles
     void SetHideSubtitle(bool hide);
+
+    // Update preview image with new RGB data
+    void UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height);
 };
 
 // SPI LCD display

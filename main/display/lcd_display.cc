@@ -810,10 +810,10 @@ void LcdDisplay::SetupUI() {
     lv_obj_add_flag(emoji_image_, LV_OBJ_FLAG_HIDDEN);
 
     /* Middle layer: preview_image_ - centered display */
-    preview_image_ = lv_image_create(screen);
-    lv_obj_set_size(preview_image_, width_ / 2, height_ / 2);
+    preview_image_ = lv_image_create(container_);
+    lv_obj_set_size(preview_image_, width_ , height_ );
     lv_obj_align(preview_image_, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_flag(preview_image_, LV_OBJ_FLAG_HIDDEN);
+    // lv_obj_add_flag(preview_image_, LV_OBJ_FLAG_HIDDEN);
 
     /* Layer 1: Top bar - for status icons */
     top_bar_ = lv_obj_create(screen);
@@ -1193,4 +1193,31 @@ void LcdDisplay::SetHideSubtitle(bool hide) {
             lv_obj_remove_flag(bottom_bar_, LV_OBJ_FLAG_HIDDEN);
         }
     }
+}
+// 更新预览图像（将转换后的RGB数据传入）
+// void LcdDisplay::UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height) {
+//     // 构建LVGL图像描述符
+//     lv_image_dsc_t img_dsc = {
+//         .header.always_zero = 0,
+//         .header.w = width,
+//         .header.h = height,
+//         .data_size = width * height * 2, // RGB565占2字节/像素
+//         .header.cf = LV_COLOR_FORMAT_RGB565, // 匹配格式
+//         .data = rgb_data,
+//     };
+//     lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
+// }
+void LcdDisplay::UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height) {
+    // 构建LVGL图像描述符
+    static lv_image_dsc_t img_dsc;
+    img_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
+    img_dsc.header.flags = LV_IMAGE_FLAGS_ALLOCATED;
+    img_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
+    img_dsc.header.w = width;
+    img_dsc.header.h = height;
+    img_dsc.header.stride = width * 2;
+    img_dsc.data_size = width * height * 2;
+    img_dsc.data = rgb_data;
+
+    lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
 }

@@ -51,29 +51,29 @@
                                 ━━━━┓    ┏━━━━┓    ┏━━━━━━┳━━━┓
                                     ┗━━━━┛    ┗━━━━┛      ┃   ┃
                          ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━┻━━━━━━━━━━┓
-                        ━╋━━ 20 -- 3.3V/VCC_OUT  ||  GPIO43/TXD0 -- 1  ━━╋━                                                                                          
+                        ━╋━━ 20 -- 3.3V/VCC_OUT  ||  GPIO43/TXD0 -- 1  ━━╋━
       [BTIN]BUTTON_REST ━╋━━ 19 -- RST           ||  GPIO44/RXD0 -- 2  ━━╋━
       [BTIN]CAMERA_SIOD ━╋━━ 18 -- GPIO 4        ||       GPIO 1 -- 3  ━━╋━ AUDIO_I2S_MIC_GPIO_WS
-      [BTIN]CAMERA_SIOC ━╋━━ 17 -- GPIO 5        ||       GPIO 2 -- 4  ━━╋━ AUDIO_I2S_MIC_GPIO_SCK  
+      [BTIN]CAMERA_SIOC ━╋━━ 17 -- GPIO 5        ||       GPIO 2 -- 4  ━━╋━ AUDIO_I2S_MIC_GPIO_SCK
      [BTIN]CAMERA_VSYNC ━╋━━ 16 -- GPIO 6        ||       GPIO42 -- 5  ━━╋━ AUDIO_I2S_MIC_GPIO_DIN
       [BTIN]CAMERA_HREF ━╋━━ 15 -- GPIO 7        ||       GPIO41 -- 6  ━━╋━ AUDIO_I2S_SPK_GPIO_LRCK
       [BTIN]CAMERA_XCLK ━╋━━ 14 -- GPIO15        ||       GPIO40 -- 7  ━━╋━ AUDIO_I2S_SPK_GPIO_BCLK/[BTIN]SD_DATA
         [BTIN]CAMERA_D7 ━╋━━ 13 -- GPIO16        ||       GPIO39 -- 8  ━━╋━ AUDIO_I2S_SPK_GPIO_DOUT/[BTIN]SD_CLK
-        [BTIN]CAMERA_D6 ━╋━━ 12 -- GPIO17        ||       GPIO38 -- 9  ━━╋━ [BTIN]SD_CMD  
-        [BTIN]CAMERA_D5 ━╋━━ 11 -- GPIO18        ||       GPIO37 -- 10 ━━╋━    
+        [BTIN]CAMERA_D6 ━╋━━ 12 -- GPIO17        ||       GPIO38 -- 9  ━━╋━ [BTIN]SD_CMD
+        [BTIN]CAMERA_D5 ━╋━━ 11 -- GPIO18        ||       GPIO37 -- 10 ━━╋━
         [BTIN]CAMERA_D2 ━╋━━ 10 -- GPIO 8        ||       GPIO36 -- 11 ━━╋━
-       DISPLAY_CLK_PIN7 ━╋━━  9 -- GPIO 3        ||       GPIO35 -- 12 ━━╋━ 
+       DISPLAY_CLK_PIN7 ━╋━━  9 -- GPIO 3        ||       GPIO35 -- 12 ━━╋━
                         ━╋━━  8 -- GPIO46        ||       GPIO 0 -- 13 ━━╋━ DISPLAY_BACKLIGHT_PIN8/[BTIN]BUTTON_BOOT
         [BTIN]CAMERA_D1 ━╋━━  7 -- GPIO 9        ||       GPIO45 -- 14 ━━╋━ DISPLAY_MOSI_PIN6
         [BTIN]CAMERA_D3 ━╋━━  6 -- GPIO10        ||       GPIO48 -- 15 ━━╋━ [BTIN]LED
         [BTIN]CAMERA_D0 ━╋━━  5 -- GPIO11        ||       GPIO47 -- 16 ━━╋━ DISPLAY_DC_PIN5
         [BTIN]CAMERA_D4 ━╋━━  4 -- GPIO12        ||       GPIO21 -- 17 ━━╋━ DISPLAY_RST_PIN4
-      [BTIN]CAMERA_PCLK ━╋━━  3 -- GPIO13        ||       GPIO20 -- 18 ━━╋━ DISPLAY_CS_PIN6/[BTIN]OTG_DP1
-        DISPLAY_CS_PIN3 ━╋━━  2 -- GPIO14        ||       GPIO19 -- 19 ━━╋━ BOOT_BUTTON/[BTIN]OTG_DN1
+      [BTIN]CAMERA_PCLK ━╋━━  3 -- GPIO13        ||       GPIO20 -- 18 ━━╋━ [BTIN]OTG_DP1
+        DISPLAY_CS_PIN3 ━╋━━  2 -- GPIO14        ||       GPIO19 -- 19 ━━╋━ [BTIN]OTG_DN1
                         ━╋━━  1 -- 5V/VCC_IN     ||          GND -- 20 ━━╋━
                          ┗━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━┛
                                   OTG                        CH340(USB2UART)
-                        
+
     Note:
       [BTIN] : built-in.
       CAMERA slot: 24 PINS,for OV2640/OV3660/OV5640/OV7725/OV9650 cameras;
@@ -85,7 +85,7 @@
                Touch Button (optional),for user defined.
 
 
-     ┃ ━ ╋ ┏ ┓ ┗ ┛  ┳ ┻ ┣ ┫ ┳ ┻ 
+     ┃ ━ ╋ ┏ ┓ ┗ ┛  ┳ ┻ ┣ ┫ ┳ ┻
     --------------------------------------------------------------------------------------------------------
 */
 
@@ -127,11 +127,11 @@
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // built-in LED
 #define BOOT_BUTTON_GPIO GPIO_NUM_0         // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
-#define VOLUME_UP_BUTTON_GPIO  GPIO_NUM_NC //GPIO_NUM_37  // 音量增//
+#define VOLUME_UP_BUTTON_GPIO GPIO_NUM_NC   // GPIO_NUM_37  // 音量增//
 #define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_NC // GPIO_NUM_38 // 音量减//
 
 // Camera Config
-#define CAMERA_PIN_D0 GPIO_NUM_11
+#define CAMERA_PIN_D0 GPIO_NUM_11 // 8位数据引脚
 #define CAMERA_PIN_D1 GPIO_NUM_9
 #define CAMERA_PIN_D2 GPIO_NUM_8
 #define CAMERA_PIN_D3 GPIO_NUM_10
@@ -139,24 +139,24 @@
 #define CAMERA_PIN_D5 GPIO_NUM_18
 #define CAMERA_PIN_D6 GPIO_NUM_17
 #define CAMERA_PIN_D7 GPIO_NUM_16
-#define CAMERA_PIN_XCLK GPIO_NUM_15
-#define CAMERA_PIN_PCLK GPIO_NUM_13
-#define CAMERA_PIN_VSYNC GPIO_NUM_6
-#define CAMERA_PIN_HREF GPIO_NUM_7
-#define CAMERA_PIN_SIOC GPIO_NUM_5
-#define CAMERA_PIN_SIOD GPIO_NUM_4
-#define CAMERA_PIN_PWDN GPIO_NUM_NC
-#define CAMERA_PIN_RESET GPIO_NUM_NC
-#define XCLK_FREQ_HZ 20000000
+#define CAMERA_PIN_XCLK GPIO_NUM_15  // 外部时钟XCLK引脚
+#define CAMERA_PIN_PCLK GPIO_NUM_13  // 像素时钟PCLK引脚
+#define CAMERA_PIN_VSYNC GPIO_NUM_6  // 场同步VSYNC引脚
+#define CAMERA_PIN_HREF GPIO_NUM_7   // 行同步/数据使能HREF引脚
+#define CAMERA_PIN_SIOC GPIO_NUM_5   // I2C时钟线SCL的串行时钟SIOC引脚
+#define CAMERA_PIN_SIOD GPIO_NUM_4   // I2C数据线SDA的串行数据SIOD引脚
+#define CAMERA_PIN_PWDN GPIO_NUM_NC  // 掉电PWDN引脚
+#define CAMERA_PIN_RESET GPIO_NUM_NC // 复位RESET引脚
+#define XCLK_FREQ_HZ 20000000        // 外部时钟频率（通常20MHz）
 
 // ILI9341 PIN Config
 #define DISPLAY_CS_PIN3 GPIO_NUM_14 //
 #define DISPLAY_RST_PIN4 GPIO_NUM_21
 #define DISPLAY_DC_PIN5 GPIO_NUM_47
-#define DISPLAY_MOSI_PIN6 GPIO_NUM_45     //
-#define DISPLAY_CLK_PIN7 GPIO_NUM_3       //
+#define DISPLAY_MOSI_PIN6 GPIO_NUM_45      //
+#define DISPLAY_CLK_PIN7 GPIO_NUM_3        //
 #define DISPLAY_BACKLIGHT_PIN8 GPIO_NUM_0 //
-#define DISPLAY_MISO_PIN9 GPIO_NUM_NC     // GPIO_NUM_46     //
+#define DISPLAY_MISO_PIN9 GPIO_NUM_NC      // GPIO_NUM_46     //
 // #define DISPLAY_SDA_PIN GPIO_NUM_45
 // #define DISPLAY_SCL_PIN GPIO_NUM_46
 

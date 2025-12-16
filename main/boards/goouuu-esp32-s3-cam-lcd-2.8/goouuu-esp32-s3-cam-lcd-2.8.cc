@@ -159,7 +159,7 @@ private:
                 .scl_pin = CAMERA_PIN_SIOC,
                 .sda_pin = CAMERA_PIN_SIOD,
             },
-            .freq = 100000,
+            .freq = 100000, // I2C频率（OV2640支持100kHz）
         };
 
         esp_video_init_dvp_config_t dvp_config = {
@@ -175,7 +175,8 @@ private:
         };
 
         camera_ = new Esp32Camera(video_config);
-        camera_->SetHMirror(false);
+        // camera_->SetVFlip(true);    // 垂直翻转图像
+        camera_->SetHMirror(false); // 水平镜像图像
     }
 
     void InitializeButtons()
@@ -201,6 +202,52 @@ private:
                                 GetAudioCodec()->SetOutputVolume(volume-1); });
     }
 
+    // // 转换YUV422到RGB565
+    // uint8_t *ConvertYUVToRGB565()
+    // {
+    //     // 转换YUV422到RGB565（示例）
+    //     uint8_t *yuv_data = frame_.data; // 采集的YUV数据
+    //     uint8_t *rgb_data = (uint8_t *)heap_caps_malloc(frame_.width * frame_.height * 2, MALLOC_CAP_SPIRAM);
+    //     esp_imgfx_color_convert(yuv_data, rgb_data, frame_.width, frame_.height,
+    //                             ESP_IMGFX_COLOR_YUV422, ESP_IMGFX_COLOR_RGB565);
+    //     return rgb_data;
+    // }
+    // // 采集一帧图像
+    // bool Capture()
+    // {
+    //     struct v4l2_buffer buf = {.type = V4L2_BUF_TYPE_VIDEO_CAPTURE, .memory = V4L2_MEMORY_MMAP};
+    //     ioctl(video_fd_, VIDIOC_DQBUF, &buf); // 从队列取出一帧
+    //     // 帧数据存于mmap_buffers_[buf.index].start
+    //     frame_.data = (uint8_t *)mmap_buffers_[buf.index].start;
+    //     frame_.len = buf.bytesused;
+    //     ioctl(video_fd_, VIDIOC_QBUF, &buf); // 放回队列等待下一帧
+    //     return true;
+    // }
+    // // 示例：创建连续采集任务
+    // void StartContinuousCapture(Esp32Camera *camera)
+    // {
+    //     LcdDisplay *display = Board::GetInstance()->GetDisplay();
+
+    //     while (true)
+    //     {
+    //         if (Capture())
+    //         { // 持续采集
+    //             // 1. 转换格式
+    //             uint8_t *rgb_data = ConvertYUVToRGB565(camera->GetFrameData());
+    //             // 2. 更新UI
+    //             display->UpdatePreview(rgb_data, camera->GetWidth(), camera->GetHeight());
+    //             // 3. 释放临时内存
+    //             free(rgb_data);
+    //         }
+    //         lv_task_handler();             // 触发LVGL刷新
+    //         vTaskDelay(pdMS_TO_TICKS(33)); // 约30fps
+    //     }
+    //     catch (std::exception &e)
+    //     {
+    //         ESP_LOGE(TAG, "Error: %s", e.what());
+    //     }
+    // }
+
 public:
     GoouuuEsp32S3CamLcd28Board() : boot_button_(BOOT_BUTTON_GPIO),
                                    volume_up_(VOLUME_UP_BUTTON_GPIO),
@@ -214,6 +261,23 @@ public:
         {
             GetBacklight()->RestoreBrightness();
         }
+
+        // // 申请帧缓冲（V4L2标准流程）
+        // struct v4l2_requestbuffers req = {
+        //     .count = 2, // 双缓冲，避免采集卡顿
+        //     .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
+        //     .memory = V4L2_MEMORY_MMAP,
+        // };
+        // ioctl(video_fd_, VIDIOC_REQBUFS, &req); // 申请缓冲
+        // // 映射缓冲区到用户空间
+        // for (uint32_t i = 0; i < req.count; i++)
+        // {
+        //     mmap_buffers_[i].start = mmap(nullptr, buf.length, PROT_READ, MAP_SHARED, video_fd_, buf.m.offset);
+        // }
+
+        // 启动连续采集任务
+        if (camera_ != nullptr)
+            camera_->Capture();
     }
 
     virtual Led *GetLed() override
