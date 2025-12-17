@@ -18,6 +18,8 @@
 #include <esp_lcd_panel_ops.h>
 #include <driver/spi_common.h>
 
+#include "camera_display.h"
+
 #if defined(LCD_TYPE_ILI9341_SERIAL)
 #include "esp_lcd_ili9341.h"
 #endif
@@ -68,8 +70,9 @@ private:
     Button volume_up_;
     Button volume_down_;
 
-    LcdDisplay *display_;
-    Esp32Camera *camera_;
+    CameraDisplay *camera_display_; // 相机显示类实例
+    Esp32Camera *camera_;           // 摄像头实例（项目原有）
+    LcdDisplay *display_;           // LCD显示实例（项目原有）
 
     // 初始化SPI总线
     void InitializeSpi()
@@ -247,39 +250,57 @@ private:
     //         ESP_LOGE(TAG, "Error: %s", e.what());
     //     }
     // }
+    // 在类定义中添加成员变量
 
 public:
     GoouuuEsp32S3CamLcd28Board() : boot_button_(BOOT_BUTTON_GPIO),
                                    volume_up_(VOLUME_UP_BUTTON_GPIO),
-                                   volume_down_(VOLUME_DOWN_BUTTON_GPIO)
+                                   volume_down_(VOLUME_DOWN_BUTTON_GPIO),
+                                   camera_display_(nullptr),
+                                   camera_(nullptr),
+                                   display_(nullptr)
     {
         InitializeSpi();
         InitializeLcdDisplay();
         InitializeButtons();
         InitializeCamera();
+
         if (DISPLAY_BACKLIGHT_PIN8 != GPIO_NUM_NC)
         {
             GetBacklight()->RestoreBrightness();
         }
 
-        // // 申请帧缓冲（V4L2标准流程）
-        // struct v4l2_requestbuffers req = {
-        //     .count = 2, // 双缓冲，避免采集卡顿
-        //     .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
-        //     .memory = V4L2_MEMORY_MMAP,
-        // };
-        // ioctl(video_fd_, VIDIOC_REQBUFS, &req); // 申请缓冲
-        // // 映射缓冲区到用户空间
-        // for (uint32_t i = 0; i < req.count; i++)
-        // {
-        //     mmap_buffers_[i].start = mmap(nullptr, buf.length, PROT_READ, MAP_SHARED, video_fd_, buf.m.offset);
-        // }
-
-        // 启动连续采集任务
-        if (camera_ != nullptr)
-            camera_->Capture();
+        // 初始化相机实时显示
+        if (camera_ != nullptr && display_ != nullptr)
+        {
+            camera_display_ = new CameraDisplay(camera_, display_);
+            if (!camera_display_->Start())
+            {
+                ESP_LOGE(TAG, "Failed to start camera display");
+                delete camera_display_;
+                camera_display_ = nullptr;
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Camera display started successfully");
+            }
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Camera or LCD display not initialized");
+        }
     }
 
+    // 在析构函数中添加清理代码
+    ~GoouuuEsp32S3CamLcd28Board()
+    {
+        if (camera_display_)
+        {
+            camera_display_->Stop();
+            delete camera_display_;
+            camera_display_ = nullptr;
+        }
+    }
     virtual Led *GetLed() override
     {
         static SingleLed led(BUILTIN_LED_GPIO);

@@ -1195,29 +1195,17 @@ void LcdDisplay::SetHideSubtitle(bool hide) {
     }
 }
 // 更新预览图像（将转换后的RGB数据传入）
-// void LcdDisplay::UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height) {
-//     // 构建LVGL图像描述符
-//     lv_image_dsc_t img_dsc = {
-//         .header.always_zero = 0,
-//         .header.w = width,
-//         .header.h = height,
-//         .data_size = width * height * 2, // RGB565占2字节/像素
-//         .header.cf = LV_COLOR_FORMAT_RGB565, // 匹配格式
-//         .data = rgb_data,
-//     };
-//     lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
-// }
 void LcdDisplay::UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height) {
     // 构建LVGL图像描述符
-    static lv_image_dsc_t img_dsc;
-    img_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
-    img_dsc.header.flags = LV_IMAGE_FLAGS_ALLOCATED;
-    img_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
-    img_dsc.header.w = width;
-    img_dsc.header.h = height;
-    img_dsc.header.stride = width * 2;
-    img_dsc.data_size = width * height * 2;
-    img_dsc.data = rgb_data;
+    // static lv_image_dsc_t img_dsc;
+    // img_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
+    // img_dsc.header.flags = LV_IMAGE_FLAGS_ALLOCATED;
+    // img_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
+    // img_dsc.header.w = width;
+    // img_dsc.header.h = height;
+    // img_dsc.header.stride = width * 2;
+    // img_dsc.data_size = width * height * 2;
+    // img_dsc.data = rgb_data;
 
-    lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
+    // lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
 }
