@@ -1194,18 +1194,61 @@ void LcdDisplay::SetHideSubtitle(bool hide) {
         }
     }
 }
+
 // 更新预览图像（将转换后的RGB数据传入）
 void LcdDisplay::UpdatePreview(uint8_t* rgb_data, uint16_t width, uint16_t height) {
-    // 构建LVGL图像描述符
-    // static lv_image_dsc_t img_dsc;
-    // img_dsc.header.magic = LV_IMAGE_HEADER_MAGIC;
-    // img_dsc.header.flags = LV_IMAGE_FLAGS_ALLOCATED;
-    // img_dsc.header.cf = LV_COLOR_FORMAT_RGB565;
-    // img_dsc.header.w = width;
-    // img_dsc.header.h = height;
-    // img_dsc.header.stride = width * 2;
-    // img_dsc.data_size = width * height * 2;
-    // img_dsc.data = rgb_data;
+    // if (rgb_data == nullptr || preview_image_ == nullptr) {
+    //     return;
+    // }
 
-    // lv_image_set_src(preview_image_, &img_dsc); // 更新UI显示
+    // DisplayLockGuard lock(this);
+    
+    // // 创建图像描述符
+    // auto img_dsc = new lv_image_dsc_t();
+    // memset(img_dsc, 0, sizeof(lv_image_dsc_t));
+    // img_dsc->header.magic = LV_IMAGE_HEADER_MAGIC;
+    // img_dsc->header.cf = LV_COLOR_FORMAT_RGB565;
+    // img_dsc->header.w = width;
+    // img_dsc->header.h = height;
+    // img_dsc->header.stride = width * 2;
+    // img_dsc->data_size = width * height * 2;
+    
+    // // 分配内存并复制图像数据
+    // img_dsc->data = (uint8_t*)malloc(img_dsc->data_size);
+    // if (img_dsc->data == nullptr) {
+    //     ESP_LOGE(TAG, "Failed to allocate memory for image data");
+    //     delete img_dsc;
+    //     return;
+    // }
+    // memcpy((void*)img_dsc->data, rgb_data, img_dsc->data_size);
+    
+    // // 设置图像源
+    // lv_image_set_src(preview_image_, img_dsc);
+    
+    // // 计算缩放比例使图像适合屏幕显示
+    // lv_coord_t screen_width = lv_display_get_horizontal_resolution(display_);
+    // lv_coord_t screen_height = lv_display_get_vertical_resolution(display_);
+    
+    // // 计算缩放因子以适应屏幕，同时保持宽高比
+    // lv_coord_t zoom_x = (screen_width * 256) / width;
+    // lv_coord_t zoom_y = (screen_height * 256) / height;
+    // lv_coord_t zoom = (zoom_x < zoom_y) ? zoom_x : zoom_y;
+    
+    // // 确保缩放不会超过256 (100%)
+    // if (zoom > 256) zoom = 256;
+    
+    // // 应用缩放
+    // lv_image_set_scale(preview_image_, zoom);
+    
+    // // 确保图像可见
+    // lv_obj_remove_flag(preview_image_, LV_OBJ_FLAG_HIDDEN);
+    
+    // // 添加事件回调以清理内存
+    // lv_obj_add_event_cb(preview_image_, [](lv_event_t* e) {
+    //     lv_image_dsc_t* img_desc = (lv_image_dsc_t*)lv_event_get_param(e);
+    //     if (img_desc && img_desc->data) {
+    //         free((void*)img_desc->data);
+    //         delete img_desc;
+    //     }
+    // }, LV_EVENT_DELETE, img_dsc);
 }
