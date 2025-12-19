@@ -223,7 +223,7 @@ private:
 
 
 public:
-    GoouuuEsp32S3CamLcd28Board() : boot_button_(BOOT_BUTTON_GPIO),
+    GoouuuEsp32S3CamLcd28Board() : boot_button_(WAKE_BUTTON_GPIO),
                                    volume_up_(VOLUME_UP_BUTTON_GPIO),
                                    volume_down_(VOLUME_DOWN_BUTTON_GPIO),
                                    photo_button_(PHOTO_BUTTON_GPIO),

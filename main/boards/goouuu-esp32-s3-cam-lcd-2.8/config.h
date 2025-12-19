@@ -125,7 +125,7 @@
 
 // Button Config
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // built-in LED
-#define BOOT_BUTTON_GPIO GPIO_NUM_NC         // boot、唤醒、打断
+#define WAKE_BUTTON_GPIO GPIO_NUM_43         // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
 #define VOLUME_UP_BUTTON_GPIO GPIO_NUM_NC   // GPIO_NUM_37  // 音量增//
 #define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_NC // GPIO_NUM_38 // 音量减//
