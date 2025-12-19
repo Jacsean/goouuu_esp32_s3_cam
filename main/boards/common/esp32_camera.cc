@@ -415,6 +415,10 @@ Esp32Camera::~Esp32Camera()
     }
     sensor_format_ = 0;
     esp_video_deinit();
+
+    if (encoder_thread_.joinable()) {
+        encoder_thread_.join();
+    }
 }
 
 void Esp32Camera::SetExplainUrl(const std::string &url, const std::string &token)
@@ -997,6 +1001,8 @@ std::string Esp32Camera::Explain(const std::string &question)
         throw std::runtime_error("Image explain URL or token is not set");
     }
 
+    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Check explain_url_.empty()......\n");
+
     // 创建局部的 JPEG 队列, 40 entries is about to store 512 * 40 = 20480 bytes of JPEG data
     QueueHandle_t jpeg_queue = xQueueCreate(40, sizeof(JpegChunk));
     if (jpeg_queue == nullptr)
@@ -1004,6 +1010,7 @@ std::string Esp32Camera::Explain(const std::string &question)
         ESP_LOGE(TAG, "Failed to create JPEG queue");
         throw std::runtime_error("Failed to create JPEG queue");
     }
+    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::xQueueCreate() for create jpeg_queue ......\n");
 
     // We spawn a thread to encode the image to JPEG using optimized encoder (cost about 500ms and 8KB SRAM)
     encoder_thread_ = std::thread([this, jpeg_queue]()
@@ -1028,6 +1035,8 @@ std::string Esp32Camera::Explain(const std::string &question)
                     chunk.len = 0;  // Sentinel or error
                 }
                 xQueueSend(jpeg_queue, &chunk, portMAX_DELAY);
+                
+                ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::image_to_jpeg_cb() len=%d ......\n",len);
                 return len;
             },
             jpeg_queue);
@@ -1037,133 +1046,291 @@ std::string Esp32Camera::Explain(const std::string &question)
             xQueueSend(jpeg_queue, &chunk, portMAX_DELAY);
         } });
 
-    auto network = Board::GetInstance().GetNetwork();
-    auto http = network->CreateHttp(3);
-    // 构造multipart/form-data请求体
-    std::string boundary = "----ESP32_CAMERA_BOUNDARY";
+    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Started encoder thread ......\n");
+    
+    // 添加重试机制
+    const int max_retries = 3;
+    std::string result = "";
+    std::exception_ptr exception_ptr = nullptr;
+    
+    for (int attempt = 0; attempt < max_retries; ++attempt) {
+        try {
+            auto network = Board::GetInstance().GetNetwork();
+            auto http = network->CreateHttp(3);
+            
+            // 构造multipart/form-data请求体
+            std::string boundary = "----ESP32_CAMERA_BOUNDARY";
 
-    // 配置HTTP客户端，使用分块传输编码
-    http->SetHeader("Device-Id", SystemInfo::GetMacAddress().c_str());
-    http->SetHeader("Client-Id", Board::GetInstance().GetUuid().c_str());
-    if (!explain_token_.empty())
-    {
-        http->SetHeader("Authorization", "Bearer " + explain_token_);
-    }
-    http->SetHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-    http->SetHeader("Transfer-Encoding", "chunked");
-    if (!http->Open("POST", explain_url_))
-    {
-        ESP_LOGE(TAG, "Failed to connect to explain URL");
-        // Clear the queue
-        encoder_thread_.join();
-        JpegChunk chunk;
-        while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
-        {
-            if (chunk.data != nullptr)
+            // 配置HTTP客户端，使用分块传输编码
+            http->SetHeader("Device-Id", SystemInfo::GetMacAddress().c_str());
+            http->SetHeader("Client-Id", Board::GetInstance().GetUuid().c_str());
+            if (!explain_token_.empty())
             {
+                http->SetHeader("Authorization", "Bearer " + explain_token_);
+            }
+            http->SetHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+            http->SetHeader("Transfer-Encoding", "chunked");
+            
+            if (!http->Open("POST", explain_url_))
+            {
+                ESP_LOGE(TAG, "Failed to connect to explain URL (attempt %d/%d)", attempt + 1, max_retries);
+                if (attempt == max_retries - 1) {
+                    // 最后一次尝试失败，清理资源并抛出异常
+                    encoder_thread_.join();
+                    JpegChunk chunk;
+                    while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
+                    {
+                        if (chunk.data != nullptr)
+                        {
+                            heap_caps_free(chunk.data);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    vQueueDelete(jpeg_queue);
+                    throw std::runtime_error("Failed to connect to explain URL after " + std::to_string(max_retries) + " attempts");
+                }
+                // 等待一段时间再重试
+                vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
+                continue;
+            }
+
+            {
+                // 第一块：question字段
+                std::string question_field;
+                question_field += "--" + boundary + "\r\n";
+                question_field += "Content-Disposition: form-data; name=\"question\"\r\n";
+                question_field += "\r\n";
+                question_field += question + "\r\n";
+                if (http->Write(question_field.c_str(), question_field.size()) <= 0) {
+                    ESP_LOGE(TAG, "Failed to write question field (attempt %d/%d)", attempt + 1, max_retries);
+                    http->Close();
+                    if (attempt == max_retries - 1) {
+                        // 最后一次尝试失败，清理资源并抛出异常
+                        encoder_thread_.join();
+                        JpegChunk chunk;
+                        while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
+                        {
+                            if (chunk.data != nullptr)
+                            {
+                                heap_caps_free(chunk.data);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        vQueueDelete(jpeg_queue);
+                        throw std::runtime_error("Failed to write question field after " + std::to_string(max_retries) + " attempts");
+                    }
+                    // 等待一段时间再重试
+                    vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
+                    continue;
+                }
+
+                ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Write question_field ......\n");
+            }
+            {
+                // 第二块：文件字段头部
+                std::string file_header;
+                file_header += "--" + boundary + "\r\n";
+                file_header += "Content-Disposition: form-data; name=\"file\"; filename=\"camera.jpg\"\r\n";
+                file_header += "Content-Type: image/jpeg\r\n";
+                file_header += "\r\n";
+                if (http->Write(file_header.c_str(), file_header.size()) <= 0) {
+                    ESP_LOGE(TAG, "Failed to write file header (attempt %d/%d)", attempt + 1, max_retries);
+                    http->Close();
+                    if (attempt == max_retries - 1) {
+                        // 最后一次尝试失败，清理资源并抛出异常
+                        encoder_thread_.join();
+                        JpegChunk chunk;
+                        while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
+                        {
+                            if (chunk.data != nullptr)
+                            {
+                                heap_caps_free(chunk.data);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        vQueueDelete(jpeg_queue);
+                        throw std::runtime_error("Failed to write file header after " + std::to_string(max_retries) + " attempts");
+                    }
+                    // 等待一段时间再重试
+                    vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
+                    continue;
+                }
+
+                ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Write file_header ......\n");
+            }
+
+            // 第三块：JPEG数据
+            size_t total_sent = 0;
+            bool saw_terminator = false;
+            bool send_error = false;
+            while (true)
+            {
+                JpegChunk chunk;
+                if (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) != pdPASS)
+                {
+                    ESP_LOGE(TAG, "Failed to receive JPEG chunk");
+                    send_error = true;
+                    break;
+                }
+                if (chunk.data == nullptr)
+                {
+                    saw_terminator = true;
+                    break; // The last chunk
+                }
+                
+                if (http->Write((const char *)chunk.data, chunk.len) <= 0) {
+                    ESP_LOGE(TAG, "Failed to write JPEG chunk (attempt %d/%d)", attempt + 1, max_retries);
+                    heap_caps_free(chunk.data);
+                    send_error = true;
+                    break;
+                }
+                
+                total_sent += chunk.len;
                 heap_caps_free(chunk.data);
+
+                ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Write JPEG chunk len=%d ......\n", chunk.len);
             }
-            else
+            
+            // 如果发生发送错误，尝试重新连接
+            if (send_error) {
+                http->Close();
+                if (attempt == max_retries - 1) {
+                    // 最后一次尝试失败，清理资源并抛出异常
+                    encoder_thread_.join();
+                    JpegChunk chunk;
+                    while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
+                    {
+                        if (chunk.data != nullptr)
+                        {
+                            heap_caps_free(chunk.data);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    vQueueDelete(jpeg_queue);
+                    throw std::runtime_error("Failed to send image data after " + std::to_string(max_retries) + " attempts");
+                }
+                // 等待一段时间再重试
+                vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
+                continue;
+            }
+            
+            // Wait for the encoder thread to finish
+            encoder_thread_.join();
+            ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Wait for encoder thread to finish ......\n");
+
+            // 清理队列
+            vQueueDelete(jpeg_queue);
+            ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Clean up jpeg_queue ......\n");
+
+            if (!saw_terminator || total_sent == 0)
             {
-                break;
+                ESP_LOGE(TAG, "JPEG encoder failed or produced empty output");
+                http->Close();
+                throw std::runtime_error("Failed to encode image to JPEG");
             }
-        }
-        vQueueDelete(jpeg_queue);
-        throw std::runtime_error("Failed to connect to explain URL");
-    }
 
-    {
-        // 第一块：question字段
-        std::string question_field;
-        question_field += "--" + boundary + "\r\n";
-        question_field += "Content-Disposition: form-data; name=\"question\"\r\n";
-        question_field += "\r\n";
-        question_field += question + "\r\n";
-        http->Write(question_field.c_str(), question_field.size());
-    }
-    {
-        // 第二块：文件字段头部
-        std::string file_header;
-        file_header += "--" + boundary + "\r\n";
-        file_header += "Content-Disposition: form-data; name=\"file\"; filename=\"camera.jpg\"\r\n";
-        file_header += "Content-Type: image/jpeg\r\n";
-        file_header += "\r\n";
-        http->Write(file_header.c_str(), file_header.size());
-    }
+            {
+                // 第四块：multipart尾部
+                std::string multipart_footer;
+                multipart_footer += "\r\n--" + boundary + "--\r\n";
+                if (http->Write(multipart_footer.c_str(), multipart_footer.size()) <= 0) {
+                    ESP_LOGE(TAG, "Failed to write multipart footer (attempt %d/%d)", attempt + 1, max_retries);
+                    http->Close();
+                    throw std::runtime_error("Failed to write multipart footer");
+                }
 
-    // 第三块：JPEG数据
-    size_t total_sent = 0;
-    bool saw_terminator = false;
-    while (true)
-    {
-        JpegChunk chunk;
-        if (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) != pdPASS)
-        {
-            ESP_LOGE(TAG, "Failed to receive JPEG chunk");
+                ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Write multipart_footer ......\n");
+            }
+            // 结束块
+            if (http->Write("", 0) <= 0) {
+                ESP_LOGE(TAG, "Failed to write end block (attempt %d/%d)", attempt + 1, max_retries);
+                http->Close();
+                throw std::runtime_error("Failed to write end block");
+            }
+            ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Write end block ......\n");
+
+            if (http->GetStatusCode() != 200)
+            {
+                ESP_LOGE(TAG, "Failed to upload photo, status code: %d (attempt %d/%d)", http->GetStatusCode(), attempt + 1, max_retries);
+                http->Close();
+                if (attempt == max_retries - 1) {
+                    throw std::runtime_error("Failed to upload photo after " + std::to_string(max_retries) + " attempts, status code: " + std::to_string(http->GetStatusCode()));
+                }
+                // 等待一段时间再重试
+                vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
+                continue;
+            }
+
+            ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain::Read response ......\n");
+            result = http->ReadAll();
+            http->Close();
+
+            // Get remain task stack size
+            size_t remain_stack_size = uxTaskGetStackHighWaterMark(nullptr);
+            ESP_LOGI(TAG, "Explain image size=%d bytes, compressed size=%d, remain stack size=%d, question=%s\n%s",
+                     (int)frame_.len, (int)total_sent, (int)remain_stack_size, question.c_str(), result.c_str());
+            
+            // 成功完成，跳出重试循环
             break;
+        } catch (...) {
+            // 捕获异常但不立即重新抛出，允许重试
+            exception_ptr = std::current_exception();
+            if (attempt == max_retries - 1) {
+                // 最后一次尝试也失败了，重新抛出异常
+                encoder_thread_.join();
+                JpegChunk chunk;
+                while (xQueueReceive(jpeg_queue, &chunk, portMAX_DELAY) == pdPASS)
+                {
+                    if (chunk.data != nullptr)
+                    {
+                        heap_caps_free(chunk.data);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                vQueueDelete(jpeg_queue);
+                std::rethrow_exception(exception_ptr);
+            }
+            // 等待一段时间再重试
+            vTaskDelay(pdMS_TO_TICKS(1000 * (attempt + 1)));
         }
-        if (chunk.data == nullptr)
-        {
-            saw_terminator = true;
-            break; // The last chunk
-        }
-        http->Write((const char *)chunk.data, chunk.len);
-        total_sent += chunk.len;
-        heap_caps_free(chunk.data);
     }
-    // Wait for the encoder thread to finish
-    encoder_thread_.join();
-    // 清理队列
-    vQueueDelete(jpeg_queue);
-
-    if (!saw_terminator || total_sent == 0)
-    {
-        ESP_LOGE(TAG, "JPEG encoder failed or produced empty output");
-        throw std::runtime_error("Failed to encode image to JPEG");
-    }
-
-    {
-        // 第四块：multipart尾部
-        std::string multipart_footer;
-        multipart_footer += "\r\n--" + boundary + "--\r\n";
-        http->Write(multipart_footer.c_str(), multipart_footer.size());
-    }
-    // 结束块
-    http->Write("", 0);
-
-    if (http->GetStatusCode() != 200)
-    {
-        ESP_LOGE(TAG, "Failed to upload photo, status code: %d", http->GetStatusCode());
-        throw std::runtime_error("Failed to upload photo");
-    }
-
-    std::string result = http->ReadAll();
-    http->Close();
-
-    // Get remain task stack size
-    size_t remain_stack_size = uxTaskGetStackHighWaterMark(nullptr);
-    ESP_LOGI(TAG, "Explain image size=%d bytes, compressed size=%d, remain stack size=%d, question=%s\n%s",
-             (int)frame_.len, (int)total_sent, (int)remain_stack_size, question.c_str(), result.c_str());
+    
     return result;
 }
 
 std::string Esp32Camera::ExplainImage(const std::string &question)
 {
     // 检查是否有有效的帧数据
-    bool hasValidFrame = (frame_.data != nullptr && frame_.len > 0);
-    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain image size=%d bytes\n", (int)frame_.len);
+    bool hasValidFrame = (frame_.data != nullptr && frame_.len > 0 && frame_.width > 0 && frame_.height > 0);
+    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>ExplainImage::Check Explain image size=%d bytes\n", (int)frame_.len);
 
     // 如果没有有效的帧数据，则先捕获图像
     if (!hasValidFrame)
     {
         if (!Capture())
         {
-            ESP_LOGE(TAG, ">>>>>>>>>>>>>>>>Failed to capture image", );
+            ESP_LOGE(TAG, ">>>>>>>>>>>>>>>>ExplainImage::Failed to capture image");
             throw std::runtime_error("Failed to capture image");
         }
-        ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>Explain image size=%d bytes\n", (int)frame_.len);
+        ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>ExplainImage::Capture image size=%d bytes\n", (int)frame_.len);
     }
 
     // 执行图像解释
+    ESP_LOGI(TAG, ">>>>>>>>>>>>>>>>ExplainImage::Ready Explain image......\n");
     return Explain(question);
 }
