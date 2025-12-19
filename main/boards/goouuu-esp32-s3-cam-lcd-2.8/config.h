@@ -55,10 +55,10 @@
       [BTIN]BUTTON_REST ━╋━━ 19 -- RST           ||  GPIO44/RXD0 -- 2  ━━╋━
       [BTIN]CAMERA_SIOD ━╋━━ 18 -- GPIO 4        ||       GPIO 1 -- 3  ━━╋━ AUDIO_I2S_MIC_GPIO_WS
       [BTIN]CAMERA_SIOC ━╋━━ 17 -- GPIO 5        ||       GPIO 2 -- 4  ━━╋━ AUDIO_I2S_MIC_GPIO_SCK
-     [BTIN]CAMERA_VSYNC ━╋━━ 16 -- GPIO 6        ||       GPIO42 -- 5  ━━╋━ AUDIO_I2S_MIC_GPIO_DIN
+     [BTIN]CAMERA_VSYNC ━╋━━ 16 -- GPIO 6        ||       GPIO42 -- 5  ━━╋━ AUDIO_I2S_MIC_GPIO_SD
       [BTIN]CAMERA_HREF ━╋━━ 15 -- GPIO 7        ||       GPIO41 -- 6  ━━╋━ AUDIO_I2S_SPK_GPIO_LRCK
       [BTIN]CAMERA_XCLK ━╋━━ 14 -- GPIO15        ||       GPIO40 -- 7  ━━╋━ AUDIO_I2S_SPK_GPIO_BCLK/[BTIN]SD_DATA
-        [BTIN]CAMERA_D7 ━╋━━ 13 -- GPIO16        ||       GPIO39 -- 8  ━━╋━ AUDIO_I2S_SPK_GPIO_DOUT/[BTIN]SD_CLK
+        [BTIN]CAMERA_D7 ━╋━━ 13 -- GPIO16        ||       GPIO39 -- 8  ━━╋━ AUDIO_I2S_SPK_GPIO_DIN/[BTIN]SD_CLK
         [BTIN]CAMERA_D6 ━╋━━ 12 -- GPIO17        ||       GPIO38 -- 9  ━━╋━ [BTIN]SD_CMD
         [BTIN]CAMERA_D5 ━╋━━ 11 -- GPIO18        ||       GPIO37 -- 10 ━━╋━
         [BTIN]CAMERA_D2 ━╋━━ 10 -- GPIO 8        ||       GPIO36 -- 11 ━━╋━
@@ -104,12 +104,12 @@
 #define AUDIO_I2S_METHOD_SIMPLEX
 #ifdef AUDIO_I2S_METHOD_SIMPLEX
 
-#define AUDIO_I2S_MIC_GPIO_WS GPIO_NUM_1
-#define AUDIO_I2S_MIC_GPIO_SCK GPIO_NUM_2
-#define AUDIO_I2S_MIC_GPIO_DIN GPIO_NUM_42
-#define AUDIO_I2S_SPK_GPIO_LRCK GPIO_NUM_41
-#define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_40
-#define AUDIO_I2S_SPK_GPIO_DOUT GPIO_NUM_39
+#define AUDIO_I2S_MIC_GPIO_WS GPIO_NUM_1    //i2s_ws 麦克串行数据的字选择
+#define AUDIO_I2S_MIC_GPIO_SCK GPIO_NUM_2   //i2s_sck 麦克串行数据的时钟
+#define AUDIO_I2S_MIC_GPIO_SD GPIO_NUM_42   //i2s_sd 麦克串行数据的输出
+#define AUDIO_I2S_SPK_GPIO_LRCK GPIO_NUM_41  //i2s_lrck 功放串行数据的左右时钟
+#define AUDIO_I2S_SPK_GPIO_BCLK GPIO_NUM_40  //i2s_bclk 功放位时钟输入
+#define AUDIO_I2S_SPK_GPIO_DIN GPIO_NUM_39  //i2s_din 功放串行数据的输入
 
 #else
 
@@ -125,7 +125,7 @@
 
 // Button Config
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // built-in LED
-#define BOOT_BUTTON_GPIO GPIO_NUM_0         // boot、唤醒、打断
+#define BOOT_BUTTON_GPIO GPIO_NUM_19         // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
 #define VOLUME_UP_BUTTON_GPIO GPIO_NUM_NC   // GPIO_NUM_37  // 音量增//
 #define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_NC // GPIO_NUM_38 // 音量减//
