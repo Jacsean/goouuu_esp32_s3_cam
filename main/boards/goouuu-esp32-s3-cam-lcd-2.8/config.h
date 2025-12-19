@@ -27,7 +27,7 @@
     GPIO_20             X               X                   X                   X         X
     GPIO_21             X               PIN4_RST            X                   X         X
     GPIO_35             X               X                   X                   X         X
-    GPIO_36             X               X                   X                   X         X
+    GPIO_36             X               X                   X                   X         PHOTO_BUTTON_GPIO
     GPIO_37             X               X                   X                   X         VOLUME_UP_BUTTON_GPIO
     GPIO_38             X               X                   X                   SD_CMD    VOLUME_DOWN_BUTTON_GPIO
     GPIO_39             X               X                   I2S_SPK_DOUT        SD_CLK    X
@@ -61,7 +61,7 @@
         [BTIN]CAMERA_D7 ━╋━━ 13 -- GPIO16        ||       GPIO39 -- 8  ━━╋━ AUDIO_I2S_SPK_GPIO_DIN/[BTIN]SD_CLK
         [BTIN]CAMERA_D6 ━╋━━ 12 -- GPIO17        ||       GPIO38 -- 9  ━━╋━ [BTIN]SD_CMD
         [BTIN]CAMERA_D5 ━╋━━ 11 -- GPIO18        ||       GPIO37 -- 10 ━━╋━
-        [BTIN]CAMERA_D2 ━╋━━ 10 -- GPIO 8        ||       GPIO36 -- 11 ━━╋━
+        [BTIN]CAMERA_D2 ━╋━━ 10 -- GPIO 8        ||       GPIO36 -- 11 ━━╋━ PHOTO_BUTTON_GPIO
        DISPLAY_CLK_PIN7 ━╋━━  9 -- GPIO 3        ||       GPIO35 -- 12 ━━╋━
                         ━╋━━  8 -- GPIO46        ||       GPIO 0 -- 13 ━━╋━ DISPLAY_BACKLIGHT_PIN8/[BTIN]BUTTON_BOOT
         [BTIN]CAMERA_D1 ━╋━━  7 -- GPIO 9        ||       GPIO45 -- 14 ━━╋━ DISPLAY_MOSI_PIN6
@@ -69,7 +69,7 @@
         [BTIN]CAMERA_D0 ━╋━━  5 -- GPIO11        ||       GPIO47 -- 16 ━━╋━ DISPLAY_DC_PIN5
         [BTIN]CAMERA_D4 ━╋━━  4 -- GPIO12        ||       GPIO21 -- 17 ━━╋━ DISPLAY_RST_PIN4
       [BTIN]CAMERA_PCLK ━╋━━  3 -- GPIO13        ||       GPIO20 -- 18 ━━╋━ [BTIN]OTG_DP1
-        DISPLAY_CS_PIN3 ━╋━━  2 -- GPIO14        ||       GPIO19 -- 19 ━━╋━ [BTIN]OTG_DN1
+        DISPLAY_CS_PIN3 ━╋━━  2 -- GPIO14        ||       GPIO19 -- 19 ━━╋━ [BTIN]OTG_DN1/BOOT_BUTTON_GPIO
                         ━╋━━  1 -- 5V/VCC_IN     ||          GND -- 20 ━━╋━
                          ┗━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━┛
                                   OTG                        CH340(USB2UART)
@@ -125,10 +125,11 @@
 
 // Button Config
 #define BUILTIN_LED_GPIO GPIO_NUM_48        // built-in LED
-#define BOOT_BUTTON_GPIO GPIO_NUM_19         // boot、唤醒、打断
+#define BOOT_BUTTON_GPIO GPIO_NUM_NC         // boot、唤醒、打断
 #define TOUCH_BUTTON_GPIO GPIO_NUM_NC       //
 #define VOLUME_UP_BUTTON_GPIO GPIO_NUM_NC   // GPIO_NUM_37  // 音量增//
 #define VOLUME_DOWN_BUTTON_GPIO GPIO_NUM_NC // GPIO_NUM_38 // 音量减//
+#define PHOTO_BUTTON_GPIO GPIO_NUM_19       // 拍照按钮
 
 // Camera Config
 #define CAMERA_PIN_D0 GPIO_NUM_11 // 8位数据引脚

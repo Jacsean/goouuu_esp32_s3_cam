@@ -69,6 +69,7 @@ private:
     Button boot_button_;
     Button volume_up_;
     Button volume_down_;
+    Button photo_button_;
 
     CameraDisplay *camera_display_; // 相机显示类实例
     Esp32Camera *camera_;           // 摄像头实例（项目原有）
@@ -203,6 +204,21 @@ private:
                              {
                                 int volume = GetAudioCodec()->output_volume();
                                 GetAudioCodec()->SetOutputVolume(volume-1); });
+                                
+        photo_button_.OnClick([this]()
+                              {
+                                  if (camera_ != nullptr) {
+                                      try {
+                                          std::string result = camera_->ExplainImage("解释图像中有什么？");
+                                          ESP_LOGI(TAG, "Photo analysis result: %s", result.c_str());
+                                          
+                                          // 可以在这里添加将结果显示到LCD屏幕上的代码
+                                          // 例如通过display_对象显示结果
+                                      } catch (const std::exception& e) {
+                                          ESP_LOGE(TAG, "Failed to explain image: %s", e.what());
+                                      }
+                                  }
+                              });
     }
 
 
@@ -210,6 +226,7 @@ public:
     GoouuuEsp32S3CamLcd28Board() : boot_button_(BOOT_BUTTON_GPIO),
                                    volume_up_(VOLUME_UP_BUTTON_GPIO),
                                    volume_down_(VOLUME_DOWN_BUTTON_GPIO),
+                                   photo_button_(PHOTO_BUTTON_GPIO),
                                    camera_display_(nullptr),
                                    camera_(nullptr),
                                    display_(nullptr)

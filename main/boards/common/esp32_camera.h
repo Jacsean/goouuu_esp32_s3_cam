@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "jpg/image_to_jpeg.h"
 #include "esp_video_init.h"
+// #include "network.h"
 
 struct JpegChunk {
     uint8_t* data;
@@ -51,6 +52,7 @@ public:
     virtual bool SetHMirror(bool enabled) override;
     virtual bool SetVFlip(bool enabled) override;
     virtual std::string Explain(const std::string& question);
+    virtual std::string ExplainImage(const std::string& question);
     
     // 添加获取帧数据的方法
     const uint8_t* GetFrameData() const { return frame_.data; }
